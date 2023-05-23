@@ -301,8 +301,8 @@ class App(tk.Frame):
 
     # 小文字の置き換え
     def replace_tail(self, word):
-        original_word = ['ゃ', 'ゅ', 'ょ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ']
-        change_word = ['や', 'ゆ', 'よ', 'あ', 'い', 'う', 'え', 'お']
+        original_word = ['ゃ', 'ゅ', 'ょ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'っ']
+        change_word = ['や', 'ゆ', 'よ', 'あ', 'い', 'う', 'え', 'お', 'つ']
         for i, original in enumerate(original_word):
             if word[-1] == original:
                 word = word[:-1] + change_word[i]
