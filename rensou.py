@@ -109,7 +109,7 @@ class App(tk.Frame):
             return
         # 英数字を弾く
         for word in user_word:
-            if word in string.ascii_letters or word in string.digits:
+            if word in string.printable:
                 self.canvas.delete('sys_message')
                 self.canvas.create_text(320, 50, text='英数字は使えません。', 
                                     fill='white', tag='sys_message', anchor=tk.CENTER,
@@ -128,8 +128,11 @@ class App(tk.Frame):
         user_word_hira = ''
         for j in range(len(user_kakasi)):
             user_word_hira += user_kakasi[j]['hira']
+        while user_word[-1] == 'ー':
+            user_word = user_word[:-1]
+        if not user_word:
+            return
         user_word_hira = self.replace_tail(user_word_hira)
-        user_word_kana = ''.join([chr(ord(i)+96) for i in user_word_hira])
         # ユーザーの入力の語尾が「ん」
         if user_word_hira[-1] == 'ん':
             self.canvas.delete('ai_word')
@@ -163,9 +166,7 @@ class App(tk.Frame):
             # ユーザーの入力が連想になっているか
             judge_words = self.model.wv.most_similar(self.ai_word, topn=self.judge_max_word)
             for i in range(self.max_word):
-                if judge_words[i][0] == user_word \
-                   or judge_words[i][0] == user_word_hira \
-                   or judge_words[i][0] == user_word_kana:
+                if judge_words[i][0] == user_word:
                     break
             else:
                 self.canvas.delete('sys_message')
@@ -181,7 +182,7 @@ class App(tk.Frame):
         for i in range(self.max_word):
             self.ai_word = self.ai_words[i][0]
             # 英数字を弾く
-            if self.ai_word in string.ascii_letters or self.ai_word in string.digits:
+            if self.ai_word in string.printable:
                 continue
             # ひらがな変換
             ai_kakasi = kks.convert(self.ai_word)
@@ -194,7 +195,7 @@ class App(tk.Frame):
             if not self.ai_word_hira:
                 continue
             # しりとりルール!
-            if self.ai_word_hira[0] == user_word_hira[-1] and self.ai_word_hira[-1] != 'ん':
+            if self.ai_word_hira[0] == user_word_hira[-1] and self.ai_word_hira[-1] != 'ん' and self.ai_word_hira[-1] != 'ー':
                 self.ai_word_hira = self.replace_tail(self.ai_word_hira)
                 self.record.append(self.ai_word_hira)
                 self.canvas.delete('ai_word')
@@ -220,20 +221,20 @@ class App(tk.Frame):
         # 空白を弾く
         if user_word == '' or '　'in user_word or ' 'in user_word:
             return
-        # 英数字を弾く
-        if user_word in string.ascii_letters or user_word in string.digits:
-            self.canvas.delete('sys_message')
-            self.canvas.create_text(320, 50, text='英数字は使えません。', 
-                                fill='white', tag='sys_message', anchor=tk.CENTER,
-                                font=('', 30))
-            return
         # 既出を弾く
         if user_word in self.record:
             self.canvas.delete('sys_message')
             self.canvas.create_text(320, 50, text='既出のものは使えません。', 
                                     fill='white', tag='sys_message', anchor=tk.CENTER,
                                     font=('', 30))
-            return        
+            return
+        for word in user_word:
+            if word in string.printable[62:-6]:
+                self.canvas.delete('sys_message')
+                self.canvas.create_text(320, 50, text='記号は使えません。', 
+                                    fill='white', tag='sys_message', anchor=tk.CENTER,
+                                    font=('', 30))
+                return        
         # ai認知テスト
         try:
             self.model.wv.most_similar(user_word, topn=self.judge_max_word)
